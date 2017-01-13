@@ -1894,5 +1894,55 @@ protected function _enddoc()
 	$this->_put('%%EOF');
 	$this->state = 3;
 }
+	function WordWrap(&$text, $maxwidth)
+	{
+		$biggestword=0;//EDITEI
+		$toonarrow=false;//EDITEI
+
+		$text = trim($text);
+		if ($text==='') return 0;
+		$space = $this->GetStringWidth(' ');
+		$lines = explode("\n", $text);
+		$text = '';
+		$count = 0;
+
+		foreach ($lines as $line)
+		{
+			$words = preg_split('/ +/', $line);
+			$width = 0;
+
+			foreach ($words as $word)
+			{
+				$wordwidth = $this->GetStringWidth($word);
+
+				//EDITEI
+				//Warn user that maxwidth is insufficient
+				if ($wordwidth > $maxwidth)
+				{
+					if ($wordwidth > $biggestword) $biggestword = $wordwidth;
+					$toonarrow=true;//EDITEI
+				}
+				if ($width + $wordwidth <= $maxwidth)
+				{
+					$width += $wordwidth + $space;
+					$text .= $word.' ';
+				}
+				else
+				{
+					$width = $wordwidth + $space;
+					$text = rtrim($text)."\n".$word.' ';
+					$count++;
+				}
+			}
+			$text = rtrim($text)."\n";
+			$count++;
+		}
+		$text = rtrim($text);
+
+		//Return -(wordsize) if word is bigger than maxwidth
+		if ($toonarrow) return -$biggestword;
+		else return $count;
+	}
+	
 }
 ?>
